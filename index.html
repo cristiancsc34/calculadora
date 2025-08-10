@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Tecnológica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .calculator {
+            background: rgba(20, 20, 30, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .display {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-end;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .display-history {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-bottom: 5px;
+            min-height: 20px;
+        }
+
+        .display-current {
+            color: white;
+            font-size: 32px;
+            font-weight: 300;
+            word-break: break-all;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .btn {
+            background: rgba(40, 40, 50, 0.8);
+            border: none;
+            border-radius: 15px;
+            color: #e0e0e0;
+            font-size: 18px;
+            font-weight: 500;
+            height: 60px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .btn:hover {
+            background: rgba(60, 60, 70, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            color: white;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+        }
+
+        .btn-clear:hover {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+        }
+
+        .btn-operator {
+            background: linear-gradient(135deg, #424242, #212121);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-operator:hover {
+            background: linear-gradient(135deg, #616161, #424242);
+        }
+
+        .btn-equals {
+            background: linear-gradient(135deg, #1976d2, #0d47a1);
+            grid-column: span 2;
+        }
+
+        .btn-equals:hover {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+        }
+
+        .btn-zero {
+            grid-column: span 2;
+        }
+
+        .title {
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 300;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 480px) {
+            .calculator {
+                padding: 20px;
+            }
+            
+            .display-current {
+                font-size: 28px;
+            }
+            
+            .btn {
+                height: 55px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1 class="title">Calculadora Tech</h1>
+        
+        <div class="display">
+            <div class="display-history" id="history"></div>
+            <div class="display-current" id="current">0</div>
+        </div>
+        
+        <div class="buttons">
+            <button class="btn btn-clear" onclick="clearAll()">C</button>
+            <button class="btn btn-clear" onclick="clearEntry()">CE</button>
+            <button class="btn btn-operator" onclick="inputOperator('/')" title="Divisão">÷</button>
+            <button class="btn btn-operator" onclick="inputOperator('*')" title="Multiplicação">×</button>
+            
+            <button class="btn" onclick="inputNumber('7')">7</button>
+            <button class="btn" onclick="inputNumber('8')">8</button>
+            <button class="btn" onclick="inputNumber('9')">9</button>
+            <button class="btn btn-operator" onclick="inputOperator('-')" title="Subtração">-</button>
+            
+            <button class="btn" onclick="inputNumber('4')">4</button>
+            <button class="btn" onclick="inputNumber('5')">5</button>
+            <button class="btn" onclick="inputNumber('6')">6</button>
+            <button class="btn btn-operator" onclick="inputOperator('+')" title="Adição">+</button>
+            
+            <button class="btn" onclick="inputNumber('1')">1</button>
+            <button class="btn" onclick="inputNumber('2')">2</button>
+            <button class="btn" onclick="inputNumber('3')">3</button>
+            <button class="btn btn-operator" onclick="inputOperator('%')" title="Porcentagem">%</button>
+            
+            <button class="btn btn-zero" onclick="inputNumber('0')">0</button>
+            <button class="btn" onclick="inputDecimal()" title="Decimal">.</button>
+            <button class="btn btn-equals" onclick="calculate()" title="Calcular">=</button>
+        </div>
+    </div>
+
+    <script>
+        let currentInput = '0';
+        let previousInput = '';
+        let operator = '';
+        let shouldResetDisplay = false;
+
+        const currentDisplay = document.getElementById('current');
+        const historyDisplay = document.getElementById('history');
+
+        function updateDisplay() {
+            currentDisplay.textContent = formatNumber(currentInput);
+            
+            if (previousInput && operator) {
+                historyDisplay.textContent = `${formatNumber(previousInput)} ${getOperatorSymbol(operator)}`;
+            } else {
+                historyDisplay.textContent = '';
+            }
+        }
+
+        function formatNumber(num) {
+            if (num === '') return '0';
+            
+            // Se for um número muito grande, usar notação científica
+            if (Math.abs(parseFloat(num)) >= 1e10) {
+                return parseFloat(num).toExponential(6);
+            }
+            
+            // Formatar com separadores de milhares
+            const parts = num.toString().split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            return parts.join('.');
+        }
+
+        function getOperatorSymbol(op) {
+            switch(op) {
+                case '+': return '+';
+                case '-': return '-';
+                case '*': return '×';
+                case '/': return '÷';
+                case '%': return '%';
+                default: return op;
+            }
+        }
+
+        function inputNumber(num) {
+            if (shouldResetDisplay) {
+                currentInput = num;
+                shouldResetDisplay = false;
+            } else {
+                currentInput = currentInput === '0' ? num : currentInput + num;
+            }
+            updateDisplay();
+        }
+
+        function inputDecimal() {
+            if (shouldResetDisplay) {
+                currentInput = '0.';
+                shouldResetDisplay = false;
+            } else if (currentInput.indexOf('.') === -1) {
+                currentInput += '.';
+            }
+            updateDisplay();
+        }
+
+        function inputOperator(op) {
+            if (previousInput && operator && !shouldResetDisplay) {
+                calculate();
+            }
+            
+            previousInput = currentInput;
+            operator = op;
+            shouldResetDisplay = true;
+            updateDisplay();
+        }
+
+        function calculate() {
+            if (!previousInput || !operator) return;
+            
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+            let result;
+            
+            try {
+                switch(operator) {
+                    case '+':
+                        result = prev + current;
+                        break;
+                    case '-':
+                        result = prev - current;
+                        break;
+                    case '*':
+                        result = prev * current;
+                        break;
+                    case '/':
+                        if (current === 0) {
+                            throw new Error('Divisão por zero');
+                        }
+                        result = prev / current;
+                        break;
+                    case '%':
+                        result = (prev * current) / 100;
+                        break;
+                    default:
+                        return;
+                }
+                
+                // Arredondar para evitar problemas de ponto flutuante
+                result = Math.round(result * 1e10) / 1e10;
+                
+                historyDisplay.textContent = `${formatNumber(previousInput)} ${getOperatorSymbol(operator)} ${formatNumber(currentInput)} =`;
+                currentInput = result.toString();
+                previousInput = '';
+                operator = '';
+                shouldResetDisplay = true;
+                
+            } catch (error) {
+                currentInput = 'Erro';
+                previousInput = '';
+                operator = '';
+                shouldResetDisplay = true;
+            }
+            
+            updateDisplay();
+        }
+
+        function clearAll() {
+            currentInput = '0';
+            previousInput = '';
+            operator = '';
+            shouldResetDisplay = false;
+            updateDisplay();
+        }
+
+        function clearEntry() {
+            currentInput = '0';
+            shouldResetDisplay = false;
+            updateDisplay();
+        }
+
+        // Suporte para teclado
+        document.addEventListener('keydown', function(event) {
+            const key = event.key;
+            
+            if (key >= '0' && key <= '9') {
+                inputNumber(key);
+            } else if (key === '.') {
+                inputDecimal();
+            } else if (key === '+' || key === '-') {
+                inputOperator(key);
+            } else if (key === '*') {
+                inputOperator('*');
+            } else if (key === '/') {
+                event.preventDefault();
+                inputOperator('/');
+            } else if (key === '%') {
+                inputOperator('%');
+            } else if (key === 'Enter' || key === '=') {
+                event.preventDefault();
+                calculate();
+            } else if (key === 'Escape') {
+                clearAll();
+            } else if (key === 'Backspace') {
+                if (currentInput.length > 1) {
+                    currentInput = currentInput.slice(0, -1);
+                } else {
+                    currentInput = '0';
+                }
+                updateDisplay();
+            }
+        });
+
+        // Inicializar display
+        updateDisplay();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96cb94910654a3f9',t:'MTc1NDc4Nzg3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
